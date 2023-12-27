@@ -14,8 +14,8 @@ class Name(Field):
 
 
 class Phone(Field):
-    def _init__(self, value):
-        if len(value) == 10 and all(char.isdigit() for char in value):
+    def __init__(self, value):
+        if len(value) == 10 and value.isdigit():
             self.value = value
         else:
             raise ValueError("Invalid value. It must be a 10-digit string of digits.")
@@ -38,15 +38,13 @@ class Record:
         self.phones = new_phones
 
     def edit_phone(self, old_phone, new_phone):
-        try:
-            new_phones = []
-            for el in self.phones:
-                if el.value == old_phone:
-                    el.value = new_phone
-                new_phones.append(el)
-            self.phones = new_phones
-        except ValueError:
-            print('Phone does not exist')
+       for el in self.phones:
+            if el.value == old_phone:
+                self.remove_phone(old_phone)
+                self.add_phone(new_phone)
+                break
+            else:
+                raise ValueError('Phone does not exist')
 
     def find_phone(self, phone):
         for el in self.phones:

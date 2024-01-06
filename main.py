@@ -1,5 +1,7 @@
+import json
 from collections import UserDict
 from datetime import datetime
+from json import JSONDecodeError
 
 
 class Field:
@@ -122,6 +124,49 @@ class AddressBook(UserDict):
         while self.current_index < len(records):
             yield records[self.current_index:self.current_index + n]
             self.current_index += n
+
+    def save_to_json(self, file_name):
+        with open(file_name, 'w') as fh:
+            json.dump(list(self.data.values()), fh, default=self.serialize_record)
+
+    def serialize_record(self, record):
+        serialized_phones = [phone.value for phone in record.phones]
+        return {
+            'name': record.name.value,
+            'phones': serialized_phones,
+            'birthday_day': record.birthday_day.value
+        }
+
+    def load_from_json(self, filename):
+        try:
+            with open(filename, 'r') as file:
+                try:
+                    records = json.load(file)
+                    for record in records:
+                        self.add_record(self.deserialize_record(record))
+                except JSONDecodeError:
+                    print(f"File '{filename}' is empty or doesn't contain valid JSON data.")
+        except FileNotFoundError:
+            print(f"File '{filename}' not found.")
+
+    def deserialize_record(self, data):
+        record = Record(data['name'], data['birthday_day'])
+        for phone in data['phones']:
+            record.add_phone(phone)
+        return record
+
+    def search(self, part):
+        matching_records = []
+        part = str(part)
+        for record in self.data.values():
+            if part in record.name.value:
+                matching_records.append(record)
+            else:
+                for phone in record.phones:
+                    if part in phone.value:
+                        matching_records.append(record)
+                        break
+        return matching_records
 
 
 if __name__ == '__main__':

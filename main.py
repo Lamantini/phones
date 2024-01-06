@@ -4,7 +4,13 @@ from datetime import datetime
 
 class Field:
     def __init__(self, value):
-        self.__value = value
+        if self.check_value(value):
+            self.__value = value
+        else:
+            self.__value = None
+
+    def check_value(self, value):
+        return True
 
     def __str__(self):
         return str(self.__value)
@@ -14,8 +20,12 @@ class Field:
         return self.__value
 
     @value.setter
-    def value(self, new_value):
-        self.__value = new_value
+    def value(self, value):
+        if self.check_value(value):
+            self.__value = value
+        else:
+            self.__value = None
+
 
 
 class Name(Field):
@@ -23,35 +33,24 @@ class Name(Field):
 
 
 class Phone(Field):
-
-    def __init__(self, value):
-        self.value = value
-
-    @Field.value.setter
-    def value(self, value):
+    def check_value(self, value):
         if value is not None:
             if len(value) == 10 and value.isdigit():
-                super(Phone, Phone).value.__set__(self, value)
+                return True
             else:
                 raise ValueError("Invalid value. It must be a 10-digit string of digits.")
-        else:
-            raise ValueError("Phone number cannot be None.")
+        return False
 
 
 class Birthday(Field):
-    def __init__(self, value):
-        self.value = value
-
-    @Field.value.setter
-    def value(self, value):
+    def check_value(self, value):
         if value is not None:
             try:
                 datetime.strptime(value, '%d.%m.%Y')
-                super(Birthday, Birthday).value.__set__(self, value)
+                return True
             except ValueError:
                 raise ValueError("Invalid date format. It must be in 00.00.0000 format.")
-        else:
-            super(Birthday, Birthday).value.__set__(self, value)
+        return False
 
 
 class Record:
@@ -133,13 +132,13 @@ if __name__ == '__main__':
         print(e)
 
     try:
-        birth = Birthday(None)
+        birth = Birthday('20.02.200')
         print(birth)
     except ValueError as e:
         print(e)
 
     try:
-        record = Record('stopa', '06.01.2025')
+        record = Record('stopa', '06.01.2085')
         record1 = Record('sdsva', '06.01.2025')
         record2 = Record('ffsdfpa', '06.01.2025')
         record3 = Record('ssdfsd', '06.01.2025')
